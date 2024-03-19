@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  jwt:
+    container_name: go-jwt2
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    tty: true
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./mysql/.env
+    depends_on:
+      - db
+    volumes:
+      - type: bind
+        source: ./server/src
+        target: /go/src
+    networks:
+      - go_jwt3
+
+  db:
+    container_name: db-jwt2
+    build:
+      context: ./mysql
+      dockerfile: Dockerfile
+    tty: true
+    platform: linux/x86_64
+    ports:
+      - "3306:3306"
+    env_file:
+      - ./mysql/.env
+    volumes:
+      - type: volume
+        source: mysql_test_volume
+        target: /var/lib/mysql
+      - type: bind
+        source: ./mysql/init
+        target: /docker-entrypoint-initdb.d
+    networks:
+      - go_jwt3
+
+volumes:
+  mysql_test_volume:
+    name: mysql_jwt_volume
+
+networks:
+  go_jwt3:
